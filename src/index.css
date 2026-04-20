@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CareTrack Design System — Sage & Cream
+   Calm, clinical, trustworthy. All colors HSL.
+*/
+
+@layer base {
+  :root {
+    /* Sage & Cream palette */
+    --background: 38 33% 94%;            /* #f5f0e8 cream */
+    --foreground: 150 18% 15%;           /* deep sage-charcoal */
+
+    --surface: 38 38% 97%;               /* lighter cream */
+    --surface-elevated: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 18% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 18% 15%;
+
+    --primary: 110 14% 53%;              /* #a8c0a0 sage */
+    --primary-foreground: 150 25% 12%;
+
+    --primary-deep: 110 14% 35%;         /* #7d9b76 deep sage */
+    --primary-deep-foreground: 38 33% 96%;
+
+    --secondary: 90 22% 86%;             /* #dce5d4 pale moss */
+    --secondary-foreground: 150 18% 15%;
+
+    --muted: 38 25% 90%;
+    --muted-foreground: 150 8% 38%;
+
+    --accent: 110 14% 35%;               /* deep sage as accent */
+    --accent-foreground: 38 33% 96%;
+
+    --destructive: 8 62% 52%;
+    --destructive-foreground: 38 33% 96%;
+
+    --warning: 32 75% 52%;
+    --success: 145 40% 38%;
+
+    --border: 90 18% 80%;
+    --input: 90 18% 84%;
+    --ring: 110 14% 35%;
+
+    --radius: 0.625rem;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(140deg, hsl(38 33% 94%) 0%, hsl(90 22% 86%) 60%, hsl(110 14% 70%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(38 30% 97%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(110 14% 53%) 0%, hsl(110 14% 35%) 100%);
+
+    /* Shadows */
+    --shadow-soft: 0 1px 2px hsl(150 18% 15% / 0.04), 0 4px 16px hsl(150 18% 15% / 0.04);
+    --shadow-elevated: 0 4px 24px hsl(150 18% 15% / 0.08), 0 1px 2px hsl(150 18% 15% / 0.04);
+    --shadow-glow: 0 0 0 4px hsl(110 14% 53% / 0.18);
+
+    /* Motion */
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --sidebar-background: 38 30% 96%;
+    --sidebar-foreground: 150 18% 22%;
+    --sidebar-primary: 110 14% 35%;
+    --sidebar-primary-foreground: 38 33% 96%;
+    --sidebar-accent: 90 22% 90%;
+    --sidebar-accent-foreground: 150 18% 15%;
+    --sidebar-border: 90 18% 84%;
+    --sidebar-ring: 110 14% 35%;
+  }
+
+  .dark {
+    --background: 150 15% 8%;
+    --foreground: 38 30% 92%;
+    --card: 150 14% 11%;
+    --card-foreground: 38 30% 92%;
+    --popover: 150 14% 11%;
+    --popover-foreground: 38 30% 92%;
+    --primary: 110 18% 60%;
+    --primary-foreground: 150 20% 10%;
+    --secondary: 150 12% 16%;
+    --secondary-foreground: 38 30% 92%;
+    --muted: 150 12% 16%;
+    --muted-foreground: 90 8% 65%;
+    --accent: 110 18% 60%;
+    --accent-foreground: 150 20% 10%;
+    --destructive: 8 62% 52%;
+    --destructive-foreground: 38 33% 96%;
+    --border: 150 12% 20%;
+    --input: 150 12% 20%;
+    --ring: 110 18% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
+  .bg-gradient-hero { background: var(--gradient-hero); }
+  .bg-gradient-card { background: var(--gradient-card); }
+  .bg-gradient-sage { background: var(--gradient-sage); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+  .grain {
+    background-image: radial-gradient(hsl(150 18% 15% / 0.025) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+}
