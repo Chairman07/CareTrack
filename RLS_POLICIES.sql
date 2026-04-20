@@ -44,7 +44,7 @@ USING (
 CREATE POLICY "Admin can view all users"
 ON public.users FOR SELECT
 USING (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 );
 
 -- Users can update their own profile
@@ -71,7 +71,7 @@ WITH CHECK (
 CREATE POLICY "Admin can insert users"
 ON public.users FOR INSERT
 WITH CHECK (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 );
 
 -- ============================================================================
