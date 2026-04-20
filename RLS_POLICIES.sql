@@ -13,17 +13,17 @@ ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admin can view all roles"
 ON public.roles FOR SELECT
 USING (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 );
 
 -- Admin can update roles
 CREATE POLICY "Admin can update roles"
 ON public.roles FOR UPDATE
 USING (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 )
 WITH CHECK (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 );
 
 -- ============================================================================
@@ -61,10 +61,10 @@ WITH CHECK (
 CREATE POLICY "Admin can update any user"
 ON public.users FOR UPDATE
 USING (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 )
 WITH CHECK (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 );
 
 -- Admin can insert new users
@@ -141,7 +141,7 @@ WITH CHECK (
 CREATE POLICY "Admin can delete patients"
 ON public.patients FOR DELETE
 USING (
-  auth.jwt() ->> 'app_metadata' -> 'role' = 'admin'
+  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
 );
 
 -- ============================================================================
