@@ -152,12 +152,25 @@ ORDER BY column_name;
 -- user_id | uuid
 -- patient_id | integer
 
--- Check RLS policies are active
-SELECT tablename, COUNT(*) as policy_count
+-- Check RLS policies are active (using correct system catalog)
+SELECT
+  tablename,
+  COUNT(*) as policy_count
 FROM pg_policies
-WHERE tablename IN ('users', 'visits', 'patients', 'roles')
+WHERE schemaname = 'public'
+AND tablename IN ('users', 'visits', 'patients', 'roles')
 GROUP BY tablename
 ORDER BY tablename;
+
+-- Check if RLS is enabled on tables
+SELECT 
+  c.relname as table_name,
+  c.relrowsecurity as rls_enabled
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public'
+AND c.relname IN ('roles', 'users', 'patients', 'visits')
+ORDER BY c.relname;
 
 -- Check auth/public.users relationship
 SELECT 

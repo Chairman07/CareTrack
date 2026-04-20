@@ -170,10 +170,14 @@ WITH CHECK (
 -- Run these to verify RLS policies are active
 
 -- Check which tables have RLS enabled
-SELECT table_name, row_security_enabled
-FROM information_schema.tables
-WHERE table_schema = 'public'
-AND table_name IN ('roles', 'users', 'patients', 'visits');
+SELECT 
+  c.relname as table_name,
+  c.relrowsecurity as rls_enabled
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public'
+AND c.relname IN ('roles', 'users', 'patients', 'visits')
+ORDER BY c.relname;
 
 -- Count active policies per table
 SELECT
