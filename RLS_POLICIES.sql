@@ -1,4 +1,4 @@
--- CareTrack Row-Level Security (RLS) Policies
+-- CareTrack Row-Level Security (RLS) Policies - SIMPLIFIED VERSION
 -- These policies enforce role-based access control at the database level
 -- Execute these statements in Supabase SQL Editor after auth infrastructure is ready
 
@@ -13,17 +13,17 @@ ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admin can view all roles"
 ON public.roles FOR SELECT
 USING (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Admin can update roles
 CREATE POLICY "Admin can update roles"
 ON public.roles FOR UPDATE
 USING (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 )
 WITH CHECK (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- ============================================================================
@@ -44,7 +44,7 @@ USING (
 CREATE POLICY "Admin can view all users"
 ON public.users FOR SELECT
 USING (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Users can update their own profile
@@ -61,17 +61,17 @@ WITH CHECK (
 CREATE POLICY "Admin can update any user"
 ON public.users FOR UPDATE
 USING (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 )
 WITH CHECK (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- Admin can insert new users
 CREATE POLICY "Admin can insert users"
 ON public.users FOR INSERT
 WITH CHECK (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- ============================================================================
@@ -86,62 +86,39 @@ CREATE POLICY "Staff can view all active patients"
 ON public.patients FOR SELECT
 USING (
   is_active
-  AND EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor', 'nurse')
-    )
-  )
+  AND (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor', 'nurse')
 );
 
--- Doctors and admins can insert/update patient records
+-- Doctors and admins can insert patient records
 CREATE POLICY "Doctor can insert patients"
 ON public.patients FOR INSERT
 WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor')
-    )
-  )
+  (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor')
 );
 
+-- Doctors and admins can update patient records
 CREATE POLICY "Doctor can update patient records"
 ON public.patients FOR UPDATE
 USING (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor')
-    )
-  )
+  (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor')
 )
 WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor')
-    )
-  )
+  (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor')
 );
 
 -- Admin can delete patients (soft delete via is_active)
 CREATE POLICY "Admin can delete patients"
 ON public.patients FOR DELETE
 USING (
-  auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'
+  (SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()) = 'admin'
 );
 
 -- ============================================================================
@@ -151,35 +128,23 @@ USING (
 -- Enable RLS on visits table
 ALTER TABLE public.visits ENABLE ROW LEVEL SECURITY;
 
--- Staff can view visits for patients they have access to
+-- Staff can view all visits
 CREATE POLICY "Staff can view visits"
 ON public.visits FOR SELECT
 USING (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor', 'nurse')
-    )
-  )
+  (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor', 'nurse')
 );
 
--- Doctors can create visits
+-- Doctors can create visits (must be the creator)
 CREATE POLICY "Doctor can create visits"
 ON public.visits FOR INSERT
 WITH CHECK (
   user_id = auth.uid()
-  AND EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor')
-    )
-  )
+  AND (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor')
 );
 
 -- Doctors can update their own visits
@@ -187,27 +152,15 @@ CREATE POLICY "Doctor can update their visits"
 ON public.visits FOR UPDATE
 USING (
   user_id = auth.uid()
-  AND EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor')
-    )
-  )
+  AND (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor')
 )
 WITH CHECK (
   user_id = auth.uid()
-  AND EXISTS (
-    SELECT 1 FROM public.users
-    WHERE users.id = auth.uid()
-    AND users.is_active
-    AND users.role_id IN (
-      SELECT id FROM public.roles
-      WHERE name IN ('admin', 'doctor')
-    )
-  )
+  AND (
+    SELECT raw_user_meta_data->>'role' FROM auth.users WHERE id = auth.uid()
+  ) IN ('admin', 'doctor')
 );
 
 -- ============================================================================
@@ -237,3 +190,12 @@ SELECT * FROM pg_policies
 WHERE schemaname = 'public'
 AND tablename IN ('roles', 'users', 'patients', 'visits')
 ORDER BY tablename, policyname;
+
+-- ============================================================================
+-- SETUP: Set user roles in auth.users metadata
+-- ============================================================================
+
+-- Run this AFTER creating test users in Supabase Auth to assign roles:
+-- UPDATE auth.users 
+-- SET raw_user_meta_data = jsonb_set(raw_user_meta_data, '{role}', '"admin"')
+-- WHERE email = 'admin@caretrack.local';
